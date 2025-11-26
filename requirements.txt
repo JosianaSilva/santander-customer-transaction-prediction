@@ -1,2 +1,6 @@
-pandas==2.3.3
-numpy==2.3.5
+fastapi==0.122.0
+joblib==1.5.2
+numpy==2.0.2
+pandas==2.2.2
+scikit-learn==1.6.1
+sklearn-pandas==2.2.0
