@@ -13,7 +13,11 @@ def read_root():
         "description": "API para predição de transações de clientes usando modelos de ML.",
         "endpoints": {
             "health": "/health",
-            "predict": "/predict"
+            "predict": "/predict",
+            "predict_batch": "/predict/batch",
+            "predict_csv": "/predict/csv",
+            "models_status": "/models/status"
+
         },
         "docs": "/docs"
     }

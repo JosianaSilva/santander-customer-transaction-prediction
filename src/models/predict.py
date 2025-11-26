@@ -74,3 +74,36 @@ def predict_single(instance: Union[pd.Series, List, np.ndarray],
         'probability_class_1': float(prediction_proba[1])
     }
 
+def predict_batch(df: pd.DataFrame, 
+                 models_path: str = "models") -> pd.DataFrame:
+    """
+    Faz predições em lote para um DataFrame.
+    
+    Args:
+        df: DataFrame com as instâncias para predição
+        models_path: Caminho para os modelos
+        
+    Returns:
+        pd.DataFrame: DataFrame com predições e probabilidades
+    """
+    pca_model, classifier_model = load_models(models_path)
+    
+    id_codes = None
+    if 'ID_code' in df.columns:
+        id_codes = df['ID_code'].copy()
+    
+    processed_data = preprocess_data(df, pca_model)
+    
+    predictions = classifier_model.predict(processed_data)
+    predictions_proba = classifier_model.predict_proba(processed_data)
+    
+    result = pd.DataFrame({
+        'prediction': predictions.astype(int),
+        'probability_class_0': predictions_proba[:, 0],
+        'probability_class_1': predictions_proba[:, 1]
+    })
+    
+    if id_codes is not None:
+        result.insert(0, 'ID_code', id_codes.values)
+    
+    return result
