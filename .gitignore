@@ -121,6 +121,7 @@ data/
 datasets/
 *.csv
 *.parquet
+models/*.json
 
 # IDE
 .vscode/

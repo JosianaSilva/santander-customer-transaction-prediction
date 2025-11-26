@@ -7,20 +7,14 @@ import joblib
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 import os
+import json
 from dotenv import load_dotenv
 
 load_dotenv()
 
-"""## Dataset"""
-
-# from google.colab import drive
-# drive.mount('/content/drive')
-
-# path = "/content/drive/MyDrive/Projetos"
-
 from pathlib import Path
 
-path = Path(__file__).parent.parent
+path = Path(__file__).parent.parent.parent
 df = pd.read_csv(f'{path}/data/raw/train.csv')
 
 df.head()
@@ -29,7 +23,7 @@ df.shape
 
 df = df.drop('ID_code', axis=1)
 
-all(df.isnull().sum()) # verifica se tem valores nulos
+all(df.isnull().sum())
 
 X, y = df.drop('target', axis=1), df['target']
 
@@ -47,8 +41,6 @@ df_test.to_csv(f'{processed_data_path}/test_split.csv', index=False)
 print(f'train_split.csv saved to {processed_data_path}/train_split.csv')
 print(f'test_split.csv saved to {processed_data_path}/test_split.csv')
 
-"""## Redução de dimensionalidade"""
-
 pca = PCA(n_components=0.95)
 
 scaler = StandardScaler()
@@ -61,10 +53,10 @@ X_reduced.shape
 componentes = pca.components_
 componentes.shape
 
+os.makedirs(f'{path}/models', exist_ok=True)
+
 joblib.dump(scaler, f'{path}/models/scaler.pkl')
 joblib.dump(pca, f'{path}/models/pca.pkl')
-
-"""## Treinamento"""
 
 device = os.getenv('DEVICE', 'cpu')
 
@@ -76,8 +68,6 @@ clf = xgb.XGBClassifier(
     tree_method='hist',
     random_state=0
 ).fit(X_reduced, y_train)
-
-"""### Predição"""
 
 X_test_scaled = scaler.transform(X_test)
 X_test_reduced = pca.transform(X_test_scaled)
@@ -92,10 +82,32 @@ print('\nClassification Report:')
 print(report)
 
 accuracy = accuracy_score(y_test, predictions)
-
 roc_auc = roc_auc_score(y_test, predictions)
+precision = precision_score(y_test, predictions)
+recall = recall_score(y_test, predictions)
+f1 = f1_score(y_test, predictions)
 
-print(f'Accuracy: {accuracy:.2f}')
-print(f'ROC AUC Score: {roc_auc:.2f}')
+print(f'Accuracy: {accuracy:.4f}')
+print(f'ROC AUC Score: {roc_auc:.4f}')
+print(f'Precision: {precision:.4f}')
+print(f'Recall: {recall:.4f}')
+print(f'F1 Score: {f1:.4f}')
 
-joblib.dump(clf, f'{path}/models/xgb_model.pkl') # exporta o modelo
+metrics = {
+    'accuracy': float(accuracy),
+    'roc_auc': float(roc_auc),
+    'precision': float(precision),
+    'recall': float(recall),
+    'f1_score': float(f1)
+}
+
+metrics_path = f'{path}/models/metrics.json'
+with open(metrics_path, 'w') as f:
+    json.dump(metrics, f, indent=2)
+
+print(f'Métricas salvas em: {metrics_path}')
+
+joblib.dump(clf, f'{path}/models/xgb_model.pkl')
+print(f'Modelo salvo em: {path}/models/xgb_model.pkl')
+print(f'PCA salvo em: {path}/models/pca.pkl')
+print(f'Scaler salvo em: {path}/models/scaler.pkl')

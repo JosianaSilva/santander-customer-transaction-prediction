@@ -6,6 +6,7 @@ API para predição de transações de clientes usando modelos de Machine Learni
 - Python 3.12+
 - Git
 - Docker (opcional)
+- Make 3.81
 
 ## 🚀 Começando
 
