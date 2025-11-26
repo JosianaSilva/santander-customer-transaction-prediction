@@ -1,7 +1,10 @@
 from fastapi import FastAPI
 import uvicorn
+from src.routes.predictions import router as predictions_router
 
 app = FastAPI()
+
+app.include_router(predictions_router)
 
 @app.get("/")
 def read_root():
@@ -9,7 +12,8 @@ def read_root():
         "message": "Customer Transaction Prediction API",
         "description": "API para predição de transações de clientes usando modelos de ML.",
         "endpoints": {
-            "health": "/health"
+            "health": "/health",
+            "predict": "/predict"
         },
         "docs": "/docs"
     }
