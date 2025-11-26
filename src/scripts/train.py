@@ -1,43 +1,101 @@
 import pandas as pd
 import numpy as np
 from sklearn.decomposition import PCA
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, confusion_matrix, classification_report
+import xgboost as xgb
 import joblib
-from sklearn.ensemble import GradientBoostingClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+"""## Dataset"""
 
 # from google.colab import drive
 # drive.mount('/content/drive')
 
 # path = "/content/drive/MyDrive/Projetos"
 
-path = "."
-df_train = pd.read_csv(f'{path}/data/train.csv')
-df_test = pd.read_csv(f'{path}/data/test.csv')
+from pathlib import Path
 
-df_train.head()
+path = Path(__file__).parent.parent
+df = pd.read_csv(f'{path}/data/raw/train.csv')
 
-df_train = df_train.drop('ID_code', axis=1)
+df.head()
 
-X_train, y_train = df_train.drop('target', axis=1), df_train['target']
+df.shape
 
-all(df_train.isnull().sum()) == False
+df = df.drop('ID_code', axis=1)
+
+all(df.isnull().sum()) # verifica se tem valores nulos
+
+X, y = df.drop('target', axis=1), df['target']
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
+
+df_train = pd.concat([X_train, y_train], axis=1)
+df_test = pd.concat([X_test, y_test], axis=1)
+
+processed_data_path = f'{path}/data/processed'
+os.makedirs(processed_data_path, exist_ok=True)
+
+df_train.to_csv(f'{processed_data_path}/train_split.csv', index=False)
+df_test.to_csv(f'{processed_data_path}/test_split.csv', index=False)
+
+print(f'train_split.csv saved to {processed_data_path}/train_split.csv')
+print(f'test_split.csv saved to {processed_data_path}/test_split.csv')
+
+"""## Redução de dimensionalidade"""
 
 pca = PCA(n_components=0.95)
-X_reduced = pca.fit_transform(X_train)
 
-print(X_reduced)
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X_train)
+
+X_reduced = pca.fit_transform(X_scaled)
+
+X_reduced.shape
 
 componentes = pca.components_
-print(componentes)
+componentes.shape
 
+joblib.dump(scaler, f'{path}/models/scaler.pkl')
 joblib.dump(pca, f'{path}/models/pca.pkl')
 
-# Treinamento
-clf = GradientBoostingClassifier(n_estimators=100, learning_rate=1.0,
-    max_depth=1, random_state=0).fit(X_reduced, y_train)
+"""## Treinamento"""
 
-# Previsão
-X_test = df_test.drop("ID_code", axis=1)
-X_test_reduced = pca.transform(X_test)
-clf.predict(X_test_reduced)
+device = os.getenv('DEVICE', 'cpu')
 
-joblib.dump(clf, f'{path}/models/gbc_model.pkl')
+clf = xgb.XGBClassifier(
+    n_estimators=500,
+    learning_rate=0.1,
+    max_depth=20,
+    device=device,
+    tree_method='hist',
+    random_state=0
+).fit(X_reduced, y_train)
+
+"""### Predição"""
+
+X_test_scaled = scaler.transform(X_test)
+X_test_reduced = pca.transform(X_test_scaled)
+predictions = clf.predict(X_test_reduced)
+
+
+matrix = confusion_matrix(y_test, predictions)
+report = classification_report(y_test, predictions)
+print('Confusion Matrix:')
+print(matrix)
+print('\nClassification Report:')
+print(report)
+
+accuracy = accuracy_score(y_test, predictions)
+
+roc_auc = roc_auc_score(y_test, predictions)
+
+print(f'Accuracy: {accuracy:.2f}')
+print(f'ROC AUC Score: {roc_auc:.2f}')
+
+joblib.dump(clf, f'{path}/models/xgb_model.pkl') # exporta o modelo

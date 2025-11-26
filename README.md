@@ -19,7 +19,7 @@ cd santander-customer-transaction-prediction
 Baixe os CSVs da competição do Kaggle:
 https://www.kaggle.com/competitions/santander-customer-transaction-prediction/data
 
-Extraia os arquivos na pasta `data/`:
+Extraia os arquivos na pasta `data/raw/`:
 - `train.csv` (esse é necessário para o treinamento)
 - `test.csv`
 - `sample_submission.csv`

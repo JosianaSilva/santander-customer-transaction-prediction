@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, UploadFile, File
 import pandas as pd
 import io
-from src.models.predict import predict_single, predict_batch, load_models
+from src.scripts.predict import predict_single, predict_batch, load_models
 
 from pydantic import BaseModel
 from typing import List
