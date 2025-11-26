@@ -1,0 +1,71 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+.venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Docker
+Dockerfile
+.dockerignore
+docker-compose.yml
+
+# Documentation
+README.md
+*.md
+
+# Logs
+*.log
+logs/
+
+# Test files
+test/
+tests/
+*_test.py
+test_*.py
+
+# Jupyter notebooks
+*.ipynb
+notebooks/
+
+# Cache e temporários
+.cache/
+.pytest_cache/
+.coverage
+.nyc_output
+
+# Arquivos de ambiente local
+.env
+.env.local
+.env.development
+.env.test
+
+# Arquivos de backup
+*.bak
+*.tmp
