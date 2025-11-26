@@ -12,23 +12,23 @@ def load_models(models_path: str = "models"):
         models_path (str): Caminho para o diretório contendo os modelos
         
     Returns:
-        tuple: (pca_model, classifier_model)
+        tuple: (pca, classifier_model)
     """
     try:
-        pca_model = joblib.load(os.path.join(models_path, 'pca_model.pkl'))
+        pca = joblib.load(os.path.join(models_path, 'pca.pkl'))
         classifier_model = joblib.load(os.path.join(models_path, 'gbc_model.pkl'))
-        return pca_model, classifier_model
+        return pca, classifier_model
     except FileNotFoundError as e:
         raise FileNotFoundError(f"Modelo não encontrado: {e}")
 
 def preprocess_data(data: Union[pd.DataFrame, pd.Series, List, np.ndarray], 
-                   pca_model) -> np.ndarray:
+                   pca) -> np.ndarray:
     """
     Preprocessa os dados aplicando as mesmas transformações do treinamento.
     
     Args:
         data: Dados a serem preprocessados (pode ser DataFrame, Series, lista ou array)
-        pca_model: Modelo PCA treinado
+        pca: Modelo PCA treinado
         
     Returns:
         np.ndarray: Dados transformados pelo PCA
@@ -45,7 +45,7 @@ def preprocess_data(data: Union[pd.DataFrame, pd.Series, List, np.ndarray],
     if 'ID_code' in data.columns:
         data = data.drop('ID_code', axis=1)
 
-    data_transformed = pca_model.transform(data)
+    data_transformed = pca.transform(data)
     
     return data_transformed
 
@@ -61,9 +61,9 @@ def predict_single(instance: Union[pd.Series, List, np.ndarray],
     Returns:
         dict: Dicionário com predição e probabilidade
     """
-    pca_model, classifier_model = load_models(models_path)
+    pca, classifier_model = load_models(models_path)
     
-    processed_data = preprocess_data(instance, pca_model)
+    processed_data = preprocess_data(instance, pca)
     
     prediction = classifier_model.predict(processed_data)[0]
     prediction_proba = classifier_model.predict_proba(processed_data)[0]
@@ -86,13 +86,13 @@ def predict_batch(df: pd.DataFrame,
     Returns:
         pd.DataFrame: DataFrame com predições e probabilidades
     """
-    pca_model, classifier_model = load_models(models_path)
+    pca, classifier_model = load_models(models_path)
     
     id_codes = None
     if 'ID_code' in df.columns:
         id_codes = df['ID_code'].copy()
     
-    processed_data = preprocess_data(df, pca_model)
+    processed_data = preprocess_data(df, pca)
     
     predictions = classifier_model.predict(processed_data)
     predictions_proba = classifier_model.predict_proba(processed_data)

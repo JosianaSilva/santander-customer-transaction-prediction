@@ -29,7 +29,7 @@ print(X_reduced)
 componentes = pca.components_
 print(componentes)
 
-joblib.dump(pca, f'{path}/models/pca_model.pkl')
+joblib.dump(pca, f'{path}/models/pca.pkl')
 
 # Treinamento
 clf = GradientBoostingClassifier(n_estimators=100, learning_rate=1.0,
