@@ -2,6 +2,7 @@
 
 PYTHON = python3
 VENV_PATH = env
+VENV_PYTHON = $(VENV_PATH)/Scripts/python.exe
 MODELS_DIR = models
 SRC_DIR = src
 SCRIPTS_DIR = $(SRC_DIR)/scripts
@@ -17,24 +18,24 @@ help:
 
 setup:
 	$(PYTHON) -m venv $(VENV_PATH)
-	$(VENV_PATH)/Scripts/pip install -r requirements.txt
+	$(VENV_PATH)/Scripts/activate && pip install -r requirements.txt
 
 train:
-	mkdir -p $(MODELS_DIR)
-	$(PYTHON) $(SCRIPTS_DIR)/train.py
+	@mkdir -p $(MODELS_DIR)
+	$(VENV_PYTHON) $(SCRIPTS_DIR)/train.py
 
 deploy:
-	$(PYTHON) $(SCRIPTS_DIR)/deploy.py
+	$(VENV_PYTHON) $(SCRIPTS_DIR)/deploy.py
 
 clean:
-	rm -rf $(MODELS_DIR)/*.pkl $(METRICS_FILE) __pycache__ $(SRC_DIR)/__pycache__ 2>/dev/null || true
+	rm -rf $(MODELS_DIR)/*.pkl $(METRICS_FILE) __pycache__ $(SRC_DIR)/__pycache__
 
 test:
-	$(PYTHON) -m pytest test/ -v
+	$(VENV_PYTHON) -m pytest test/ -v
 
 dev-train: train
-	$(PYTHON) -c "import json; metrics = json.load(open('$(METRICS_FILE)')); print(f'Accuracy: {metrics[\"accuracy\"]:.4f}'); print(f'ROC AUC: {metrics[\"roc_auc\"]:.4f}')"
+	$(VENV_PYTHON) -c "import json; metrics = json.load(open('$(METRICS_FILE)')); print(f'Accuracy: {metrics[\"accuracy\"]:.4f}'); print(f'ROC AUC: {metrics[\"roc_auc\"]:.4f}')"
 
 dev-info:
-	@echo "Modelos: $$(ls -1 $(MODELS_DIR)/*.pkl 2>/dev/null | wc -l)"
-	@echo "Última atualização: $$(stat -c %y $(METRICS_FILE) 2>/dev/null || echo 'Nenhum treino')"
+	@echo "Modelos: $(shell ls -1 $(MODELS_DIR)/*.pkl 2>/dev/null | wc -l)"
+	@echo "Última atualização: $(shell stat -c %y $(METRICS_FILE) 2>/dev/null || echo 'Nenhum treino')"
