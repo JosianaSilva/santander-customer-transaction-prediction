@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: santander-prediction-api
+    env: python
+    region: oregon
+    plan: free
+    buildCommand: "./build.sh"
+    startCommand: "uvicorn src.main:app --host 0.0.0.0 --port $PORT"
+    healthCheckPath: /health
+    
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10.0
+      - key: ENVIRONMENT
+        value: production
+      - key: LOG_LEVEL
+        value: info
+    
+    scaling:
+      minInstances: 1
+      maxInstances: 3
+      targetCPU: 70
+      targetMemory: 80
