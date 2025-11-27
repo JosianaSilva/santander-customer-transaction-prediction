@@ -4,6 +4,7 @@ import shutil
 from pathlib import Path
 from typing import Optional, Dict
 from huggingface_hub import HfApi, create_repo, hf_hub_download
+import os
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -127,6 +128,9 @@ def load_model_from_hf(repo_id: str, token: Optional[str] = None):
 
 def download_model_from_hf(repo_id: str, token: Optional[str] = None):
     """Faz o download dos modelos do HF Hub e salva localmente"""
+    if not token:
+        token = os.getenv("HF_TOKEN")
+
     model_path = hf_hub_download(repo_id=repo_id, filename="model.pkl", token=token)
     pca_path = hf_hub_download(repo_id=repo_id, filename="pca.pkl", token=token)
     scaler_path = hf_hub_download(repo_id=repo_id, filename="scaler.pkl", token=token)
